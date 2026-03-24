@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { Trash2, Check } from "lucide-react";
-import type { TodoItem as TodoItemType } from "@/types";
+import type { TodoColor, TodoItem as TodoItemType } from "@/types";
 import { useTodoStore } from "@/stores/todoStore";
-import { getDueDateStatus, colorMap, dueDateColorMap } from "@/lib/utils";
+import { getDueDateStatus, dueDateColorMap } from "@/lib/utils";
+import { ColorLabel } from "@/components/ColorLabel";
+import { DueDatePicker } from "@/components/DueDatePicker";
 
 interface TodoItemProps {
   todo: TodoItemType;
@@ -12,6 +14,8 @@ export function TodoItem({ todo }: TodoItemProps) {
   const toggleTodo = useTodoStore((s) => s.toggleTodo);
   const editTodo = useTodoStore((s) => s.editTodo);
   const deleteTodo = useTodoStore((s) => s.deleteTodo);
+  const setTodoColor = useTodoStore((s) => s.setTodoColor);
+  const setTodoDueDate = useTodoStore((s) => s.setTodoDueDate);
 
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(todo.content);
@@ -71,12 +75,15 @@ export function TodoItem({ todo }: TodoItemProps) {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* 颜色圆点（仅当 color 不为 null 时显示） */}
-      {todo.color !== null && (
-        <span
-          className={`w-1.5 h-1.5 rounded-full shrink-0 ${colorMap[todo.color]}`}
+      {/* 颜色标签选择器：hover 时可见，非 hover 时仅当有颜色时显示圆点 */}
+      <div className={isHovered || todo.color !== null ? "opacity-100" : "opacity-0"}>
+        <ColorLabel
+          color={todo.color}
+          onChange={(color: TodoColor | null) => {
+            setTodoColor(todo.id, color).catch(console.error);
+          }}
         />
-      )}
+      </div>
 
       {/* 自定义圆形复选框 */}
       <button
@@ -125,13 +132,26 @@ export function TodoItem({ todo }: TodoItemProps) {
           </span>
         )}
 
-        {/* 截止日期标签（仅当 dueDate 不为 null 时显示） */}
-        {todo.dueDate !== null && !isEditing && (
-          <span
-            className={`text-[10px] shrink-0 font-medium ${dueDateColorMap[dueDateStatus]}`}
-          >
-            {todo.dueDate}
-          </span>
+        {/* 截止日期：hover 时显示日期选择器，非 hover 时仅显示日期标签 */}
+        {!isEditing && (
+          <div className="shrink-0">
+            {isHovered ? (
+              <DueDatePicker
+                dueDate={todo.dueDate}
+                onChange={(date) => {
+                  setTodoDueDate(todo.id, date).catch(console.error);
+                }}
+              />
+            ) : (
+              todo.dueDate !== null && (
+                <span
+                  className={`text-[10px] font-medium ${dueDateColorMap[dueDateStatus]}`}
+                >
+                  {todo.dueDate}
+                </span>
+              )
+            )}
+          </div>
         )}
       </div>
 
