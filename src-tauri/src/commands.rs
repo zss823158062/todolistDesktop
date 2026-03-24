@@ -203,6 +203,22 @@ pub async fn set_opacity(opacity: f64) -> Result<(), String> {
 // 开机自启动 Command (TASK-BE1-005)
 // ============================================================
 
+// ============================================================
+// 系统通知 Command（到期提醒）
+// ============================================================
+
+/// 发送系统通知
+#[tauri::command]
+pub fn send_notification(title: String, body: String) -> Result<(), String> {
+    notify_rust::Notification::new()
+        .appname("TodoList Desktop Pin")
+        .summary(&title)
+        .body(&body)
+        .show()
+        .map_err(|e| format!("failed to send notification: {e}"))?;
+    Ok(())
+}
+
 /// 切换开机自启动
 #[tauri::command]
 pub async fn set_auto_start(

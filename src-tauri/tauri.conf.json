@@ -29,11 +29,7 @@
         "visible": true,
         "center": true
       }
-    ],
-    "trayIcon": {
-      "iconPath": "icons/icon.png",
-      "iconAsTemplate": true
-    }
+    ]
   },
   "bundle": {
     "active": true,

@@ -10,7 +10,7 @@ use tauri_plugin_autostart::MacosLauncher;
 
 use crate::commands::{
     add_todo, clear_completed, delete_todo, get_settings, get_todos, save_settings,
-    set_always_on_top, set_auto_start, set_opacity, update_todo,
+    send_notification, set_always_on_top, set_auto_start, set_opacity, update_todo,
 };
 use crate::models::AppSettings;
 
@@ -36,6 +36,7 @@ pub fn run() {
             set_always_on_top,
             set_opacity,
             set_auto_start,
+            send_notification,
         ])
         .setup(|app| {
             // ---- 系统托盘初始化 ----
@@ -46,6 +47,7 @@ pub fn run() {
             let _tray = TrayIconBuilder::new()
                 .icon(app.default_window_icon().unwrap().clone())
                 .menu(&menu)
+                .show_menu_on_left_click(false)
                 .on_menu_event(|app, event| match event.id.as_ref() {
                     "show" => {
                         if let Some(window) = app.get_webview_window("main") {
