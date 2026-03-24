@@ -68,6 +68,27 @@ pub struct AppSettings {
     pub auto_start: bool,
     /// 主题模式：auto/light/dark
     pub theme: String,
+    /// 是否启用到期提醒
+    #[serde(default = "default_true")]
+    pub reminder_enabled: bool,
+    /// 提醒时间点列表，"HH:mm" 格式
+    #[serde(default = "default_reminder_times")]
+    pub reminder_times: Vec<String>,
+    /// 到期前多少天开始提醒
+    #[serde(default = "default_reminder_days_before")]
+    pub reminder_days_before: u32,
+}
+
+fn default_true() -> bool {
+    true
+}
+
+fn default_reminder_times() -> Vec<String> {
+    vec!["11:00".to_string(), "15:00".to_string()]
+}
+
+fn default_reminder_days_before() -> u32 {
+    2
 }
 
 impl Default for AppSettings {
@@ -81,6 +102,9 @@ impl Default for AppSettings {
             opacity: 0.9,
             auto_start: false,
             theme: "auto".to_string(),
+            reminder_enabled: true,
+            reminder_times: vec!["11:00".to_string(), "15:00".to_string()],
+            reminder_days_before: 2,
         }
     }
 }

@@ -44,6 +44,12 @@ export interface AppSettings {
   autoStart: boolean;
   /** 主题模式：auto=跟随系统, light=浅色, dark=深色；默认 "auto" */
   theme: "auto" | "light" | "dark";
+  /** 是否启用到期提醒，默认 true */
+  reminderEnabled: boolean;
+  /** 提醒时间点列表，24小时制 "HH:mm" 格式，默认 ["11:00", "15:00"] */
+  reminderTimes: string[];
+  /** 到期前多少天开始提醒，范围 0~7，默认 2 */
+  reminderDaysBefore: number;
 }
 
 /** 颜色标签枚举值（用于类型守卫和 UI 映射） */

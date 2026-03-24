@@ -1,11 +1,8 @@
 import { useEffect, useRef } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import type { TodoItem } from "@/types";
+import { useSettingsStore } from "@/stores/settingsStore";
 
-/** 提醒时间点（24小时制） */
-const REMINDER_HOURS = [11, 15];
-/** 到期前多少天开始提醒 */
-const REMINDER_DAYS_BEFORE = 2;
 /** 轮询间隔（毫秒） */
 const CHECK_INTERVAL = 30_000;
 
@@ -27,32 +24,42 @@ function isDueWithinDays(dueDate: string, days: number): boolean {
 
 /**
  * 到期提醒 hook
- * 在 REMINDER_HOURS 指定的时间点，对即将到期的未完成待办发送系统通知
+ * 在用户设置的时间点，对即将到期的未完成待办发送系统通知
  */
 export function useReminder(todos: TodoItem[]) {
   const lastNotifiedSlot = useRef("");
+  const settings = useSettingsStore((s) => s.settings);
 
   useEffect(() => {
     const timer = setInterval(() => {
+      // 提醒未启用或无提醒时间点
+      if (!settings.reminderEnabled || settings.reminderTimes.length === 0)
+        return;
+
       const now = new Date();
       const hour = now.getHours();
       const minute = now.getMinutes();
+      const currentTime = `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
 
-      // 仅在指定小时的前 2 分钟内触发
-      if (!REMINDER_HOURS.includes(hour) || minute > 1) return;
+      // 检查当前时间是否匹配任一提醒时间点（允许 0~1 分钟偏差）
+      const matched = settings.reminderTimes.some((t) => {
+        const [h, m] = t.split(":").map(Number);
+        return hour === h && minute >= m && minute <= m + 1;
+      });
+      if (!matched) return;
 
       // 构建时段 key，防止同一时段重复通知
       const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-      const slotKey = `${dateStr}-${hour}`;
+      const slotKey = `${dateStr}-${currentTime}`;
 
       if (slotKey === lastNotifiedSlot.current) return;
 
-      // 筛选：未完成 + 有截止日期 + 0~2 天内到期
+      // 筛选：未完成 + 有截止日期 + N 天内到期
       const dueTodos = todos.filter(
         (t) =>
           !t.completed &&
           t.dueDate !== null &&
-          isDueWithinDays(t.dueDate, REMINDER_DAYS_BEFORE)
+          isDueWithinDays(t.dueDate, settings.reminderDaysBefore)
       );
 
       if (dueTodos.length === 0) return;
@@ -74,5 +81,5 @@ export function useReminder(todos: TodoItem[]) {
     }, CHECK_INTERVAL);
 
     return () => clearInterval(timer);
-  }, [todos]);
+  }, [todos, settings.reminderEnabled, settings.reminderTimes, settings.reminderDaysBefore]);
 }

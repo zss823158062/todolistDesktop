@@ -17,6 +17,9 @@ const DEFAULT_SETTINGS: AppSettings = {
   opacity: 0.9,
   autoStart: false,
   theme: "auto",
+  reminderEnabled: true,
+  reminderTimes: ["11:00", "15:00"],
+  reminderDaysBefore: 2,
 };
 
 interface SettingsStore {
@@ -32,6 +35,14 @@ interface SettingsStore {
   toggleAutoStart(): Promise<void>;
   /** 更新主题 */
   setTheme(theme: AppSettings["theme"]): Promise<void>;
+  /** 切换提醒开关 */
+  toggleReminder(): Promise<void>;
+  /** 添加提醒时间点 */
+  addReminderTime(time: string): Promise<void>;
+  /** 删除提醒时间点 */
+  removeReminderTime(time: string): Promise<void>;
+  /** 设置提前提醒天数 */
+  setReminderDaysBefore(days: number): Promise<void>;
   /** 保存窗口位置/尺寸（窗口 move/resize 事件触发） */
   saveWindowBounds(
     x: number,
@@ -110,6 +121,62 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
       await saveSettings(newSettings);
     } catch (err) {
       console.error("[settingsStore] setTheme failed:", err);
+    }
+  },
+
+  toggleReminder: async () => {
+    try {
+      const newSettings: AppSettings = {
+        ...get().settings,
+        reminderEnabled: !get().settings.reminderEnabled,
+      };
+      set({ settings: newSettings });
+      await saveSettings(newSettings);
+    } catch (err) {
+      console.error("[settingsStore] toggleReminder failed:", err);
+    }
+  },
+
+  addReminderTime: async (time: string) => {
+    try {
+      const current = get().settings.reminderTimes;
+      if (current.includes(time)) return;
+      const newTimes = [...current, time].sort();
+      const newSettings: AppSettings = {
+        ...get().settings,
+        reminderTimes: newTimes,
+      };
+      set({ settings: newSettings });
+      await saveSettings(newSettings);
+    } catch (err) {
+      console.error("[settingsStore] addReminderTime failed:", err);
+    }
+  },
+
+  removeReminderTime: async (time: string) => {
+    try {
+      const newTimes = get().settings.reminderTimes.filter((t) => t !== time);
+      const newSettings: AppSettings = {
+        ...get().settings,
+        reminderTimes: newTimes,
+      };
+      set({ settings: newSettings });
+      await saveSettings(newSettings);
+    } catch (err) {
+      console.error("[settingsStore] removeReminderTime failed:", err);
+    }
+  },
+
+  setReminderDaysBefore: async (days: number) => {
+    try {
+      const newSettings: AppSettings = {
+        ...get().settings,
+        reminderDaysBefore: Math.max(0, Math.min(7, days)),
+      };
+      set({ settings: newSettings });
+      await saveSettings(newSettings);
+    } catch (err) {
+      console.error("[settingsStore] setReminderDaysBefore failed:", err);
     }
   },
 
