@@ -1,0 +1,11 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "main-capability",
+  "description": "Main window capabilities for TodoList Desktop Pin",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "store:default",
+    "autostart:default"
+  ]
+}
