@@ -1,0 +1,31 @@
+node_modules/
+.worktrees/
+
+# Build outputs
+dist/
+dist-ssr/
+
+# Tauri / Rust build artifacts
+src-tauri/target/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# TypeScript build info
+*.tsbuildinfo
+

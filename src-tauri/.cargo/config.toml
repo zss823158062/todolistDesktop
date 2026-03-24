@@ -1,0 +1,4 @@
+[build]
+# 将 target 目录重定向到不含中文字符的路径
+# 原因：Windows 上路径含中文时，某些 Cargo build script 无法执行（拒绝访问 os error 5）
+target-dir = "C:/cargo-targets/todolist-desktop-pin"
