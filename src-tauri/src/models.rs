@@ -21,6 +21,20 @@ pub struct TodoItem {
     pub due_date: Option<String>,
 }
 
+impl Default for TodoItem {
+    fn default() -> Self {
+        TodoItem {
+            id: String::new(),
+            content: String::new(),
+            completed: false,
+            created_at: 0,
+            updated_at: 0,
+            color: None,
+            due_date: None,
+        }
+    }
+}
+
 /// 创建待办参数（前端构造，后端补全剩余字段）
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
