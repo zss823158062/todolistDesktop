@@ -75,6 +75,10 @@ todoList_desktop_pin/
 └── docs/                   # 需求文档
 ```
 
+## 社区
+
+[LINUX DO](https://linux.do/)
+
 ## 许可证
 
 MIT
