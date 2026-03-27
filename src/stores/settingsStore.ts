@@ -5,7 +5,6 @@ import {
   saveSettings,
   setAlwaysOnTop,
   setAutoStart,
-  setOpacity as apiSetOpacity,
 } from "@/lib/tauri";
 
 const DEFAULT_SETTINGS: AppSettings = {
@@ -54,6 +53,7 @@ interface SettingsStore {
 
 /** 防抖计时器 ID */
 let saveWindowBoundsTimer: ReturnType<typeof setTimeout> | null = null;
+let saveOpacityTimer: ReturnType<typeof setTimeout> | null = null;
 
 export const useSettingsStore = create<SettingsStore>((set, get) => ({
   settings: { ...DEFAULT_SETTINGS },
@@ -69,17 +69,21 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
   },
 
   setOpacity: async (opacity: number) => {
-    try {
-      // 实时更新窗口透明度
-      await apiSetOpacity(opacity);
-      // 更新本地 store
-      const newSettings: AppSettings = { ...get().settings, opacity };
-      set({ settings: newSettings });
-      // 持久化保存
-      await saveSettings(newSettings);
-    } catch (err) {
-      console.error("[settingsStore] setOpacity failed:", err);
+    // 立即更新本地状态，实现拖动时实时预览
+    const newSettings: AppSettings = { ...get().settings, opacity };
+    set({ settings: newSettings });
+    // 防抖持久化，避免拖动时频繁写盘
+    if (saveOpacityTimer !== null) {
+      clearTimeout(saveOpacityTimer);
     }
+    saveOpacityTimer = setTimeout(async () => {
+      try {
+        await saveSettings(get().settings);
+      } catch (err) {
+        console.error("[settingsStore] setOpacity save failed:", err);
+      }
+      saveOpacityTimer = null;
+    }, 300);
   },
 
   toggleAlwaysOnTop: async () => {

@@ -33,6 +33,11 @@ function App() {
     const appWindow = getCurrentWindow();
 
     const unlistenMove = appWindow.onMoved(async ({ payload }) => {
+      // Windows 隐藏窗口时会移到 (-32000, -32000)，过滤掉这种异常坐标
+      if (payload.x < -9999 || payload.y < -9999) {
+        return;
+      }
+
       // 吸附触发的移动：保存最终位置后跳过
       if (isSnapping.current) {
         isSnapping.current = false;
@@ -125,7 +130,7 @@ function App() {
   // loading 占位
   if (todoLoading) {
     return (
-      <div className="w-full h-screen flex flex-col bg-white dark:bg-gray-900">
+      <div className="w-full h-screen flex flex-col bg-white dark:bg-gray-900" style={{ opacity: settings.opacity }}>
         <div className="h-8 bg-white/80 dark:bg-gray-900/80 border-b border-gray-200/60 dark:border-gray-700/60 animate-pulse" />
         <div className="flex-1 flex items-center justify-center">
           <span className="text-sm text-gray-400 dark:text-gray-500">加载中...</span>
@@ -135,7 +140,10 @@ function App() {
   }
 
   return (
-    <div className="w-full h-screen flex flex-col bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm overflow-hidden">
+    <div
+      className="w-full h-screen flex flex-col bg-white dark:bg-gray-900 backdrop-blur-sm overflow-hidden"
+      style={{ opacity: settings.opacity }}
+    >
       <TitleBar />
       <TodoList />
       <TodoInput />

@@ -96,13 +96,29 @@ pub fn run() {
                             None => AppSettings::default(),
                         };
 
-                        // 恢复窗口位置
-                        if settings.window_x != -1 && settings.window_y != -1 {
-                            let _ = win_clone.set_position(tauri::PhysicalPosition::new(
-                                settings.window_x,
-                                settings.window_y,
-                            ));
-                        } else {
+                        // 恢复窗口位置（校验坐标在屏幕范围内）
+                        let mut use_saved = false;
+                        if settings.window_x != -1 && settings.window_y != -1 && settings.window_x > -9999 && settings.window_y > -9999 {
+                            // 验证保存的位置在可见屏幕内
+                            if let Ok(Some(monitor)) = win_clone.primary_monitor() {
+                                let screen = monitor.size();
+                                if settings.window_x < screen.width as i32 && settings.window_y < screen.height as i32 {
+                                    let _ = win_clone.set_position(tauri::PhysicalPosition::new(
+                                        settings.window_x,
+                                        settings.window_y,
+                                    ));
+                                    use_saved = true;
+                                }
+                            } else {
+                                // 无法获取显示器信息时仍尝试恢复
+                                let _ = win_clone.set_position(tauri::PhysicalPosition::new(
+                                    settings.window_x,
+                                    settings.window_y,
+                                ));
+                                use_saved = true;
+                            }
+                        }
+                        if !use_saved {
                             // 首次运行：定位到屏幕右上角（距边缘 20px）
                             if let Ok(Some(monitor)) = win_clone.primary_monitor() {
                                 let screen_size = monitor.size();
@@ -120,6 +136,10 @@ pub fn run() {
 
                         // 恢复置顶设置
                         let _ = win_clone.set_always_on_top(settings.always_on_top);
+
+                        // 确保窗口可见并获取焦点
+                        let _ = win_clone.show();
+                        let _ = win_clone.set_focus();
                     }
                 });
 
